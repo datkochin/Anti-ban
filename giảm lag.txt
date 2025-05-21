@@ -1,0 +1,53 @@
+-- Kavo UI Loader
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
+local Window = Library.CreateLib("Menu Giảm Lag", "Midnight")
+
+local tab = Window:NewTab("Anti-Lag")
+local section = tab:NewSection("Tuỳ chọn giảm lag")
+
+-- Tắt hiệu ứng
+section:NewToggle("Tắt hiệu ứng (Particle, Smoke...)", "Xoá hiệu ứng visual", function(state)
+    if state then
+        for _, v in pairs(game:GetDescendants()) do
+            if v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Smoke") or v:IsA("Fire") or v:IsA("Explosion") then
+                v:Destroy()
+            end
+        end
+    end
+end)
+
+-- Tắt Decals
+section:NewToggle("Tắt hình ảnh Decal", "Làm mờ hoặc ẩn Decal", function(state)
+    for _, v in pairs(game:GetDescendants()) do
+        if v:IsA("Decal") then
+            v.Transparency = state and 1 or 0
+        end
+    end
+end)
+
+-- Tắt bóng đổ và chỉnh Lighting
+section:NewButton("Tối ưu ánh sáng", "Tắt GlobalShadows và chỉnh Fog", function()
+    local Lighting = game:GetService("Lighting")
+    Lighting.GlobalShadows = false
+    Lighting.FogEnd = 100000
+    Lighting.Brightness = 1
+    Lighting.Ambient = Color3.new(1, 1, 1)
+end)
+
+-- Tối ưu Water Terrain
+section:NewButton("Tối ưu nước (Terrain)", "Giảm WaterEffect", function()
+    if game.Workspace:FindFirstChildOfClass("Terrain") then
+        local Terrain = game.Workspace.Terrain
+        Terrain.WaterWaveSize = 0
+        Terrain.WaterWaveSpeed = 0
+        Terrain.WaterReflectance = 0
+        Terrain.WaterTransparency = 1
+    end
+end)
+
+-- Set FPS cap (nếu executor hỗ trợ)
+section:NewButton("Giới hạn FPS (30)", "Giúp máy yếu mượt hơn", function()
+    pcall(function()
+        setfpscap(30)
+    end)
+    

@@ -1,0 +1,76 @@
+-- [Anti-BanWave Ultimate v1.0]
+-- Bảo vệ mạnh nhất có thể khi exploit Roblox
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+local StarterGui = game:GetService("StarterGui")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local AntiBan = {
+    Active = true,
+    SuspectNames = {
+        ["Roblox"] = true,
+        ["Builderman"] = true,
+        ["mod123"] = true,
+        ["admin_01"] = true,
+    }
+}
+
+-- 1. Tự động thoát khi phát hiện Staff
+Players.PlayerAdded:Connect(function(player)
+    if AntiBan.SuspectNames[player.Name] and AntiBan.Active then
+        AntiBan:Trigger("Staff Detected: " .. player.Name)
+    end
+end)
+
+-- 2. Phát hiện kick bất thường hoặc teleport lỗi
+LocalPlayer.OnTeleport:Connect(function(state)
+    if state == Enum.TeleportState.Failed and AntiBan.Active then
+        AntiBan:Trigger("Unexpected Teleport")
+    end
+end)
+
+-- 3. Delay ngẫu nhiên cho mọi hành động
+function AntiBan:SafeWait(min, max)
+    wait(math.random(min * 100, max * 100) / 100)
+end
+
+-- 4. Chặn các RemoteEvent đáng ngờ gây kick
+local oldNamecall
+oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
+    local method = getnamecallmethod()
+    if AntiBan.Active and tostring(self):lower():find("kick") and method == "FireServer" then
+        warn("[AntiBan] Blocked suspicious RemoteEvent: " .. tostring(self))
+        return nil
+    end
+    return oldNamecall(self, ...)
+end)
+
+-- 5. Tự động disable script & out game nếu nguy hiểm
+function AntiBan:Trigger(reason)
+    if not self.Active then return end
+    self.Active = false
+    warn("[AntiBan] Threat Detected - " .. reason)
+
+    for _, v in pairs(getgc(true)) do
+        if typeof(v) == "function" and islclosure(v) and not isexecutorclosure(v) then
+            setfenv(v, {})
+        end
+    end
+
+    wait(0.2)
+    LocalPlayer:Kick("[AntiBan] Protection Triggered: " .. reason)
+end
+
+-- 6. In tên executor nếu có
+if identifyexecutor then
+    print("[AntiBan] Executor: " .. tostring(identifyexecutor()))
+end
+
+_G.AntiBan = AntiBan
+print("[AntiBan] Ultimate Protection Module Active.")
+while _G.AntiBan.Active do
+    -- hành động an toàn
+    _G.AntiBan:SafeWait(2, 4)
+end
