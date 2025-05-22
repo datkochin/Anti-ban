@@ -50,4 +50,5 @@ section:NewButton("Giới hạn FPS (30)", "Giúp máy yếu mượt hơn", func
     pcall(function()
         setfpscap(30)
     end)
-    
+loading script: 
+       loadstring(game:HttpGet("https://raw.githubusercontent.com/datkochin/Anti-ban/refs/heads/main/.txt"))()
